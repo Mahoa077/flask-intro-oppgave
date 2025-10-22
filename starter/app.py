@@ -15,12 +15,6 @@ posts = [
 def hello():
     return render_template('index.html', posts=posts)
 
-def get_post_by_id(post_id: int):
-    for p in posts:
-        if p[0] == post_id:
-            return p
-    return None
-
 @app.route("/post/<int:post_id>")
 def post_detail(post_id):
     post = get_post_by_id(post_id)
@@ -30,6 +24,11 @@ def post_detail(post_id):
 
 from flask import abort
 
+def get_post_by_id(post_id: int):
+    for p in posts:
+        if p[0] == post_id:
+            return p
+    return None
 
 
 @app.errorhandler(404)
