@@ -24,6 +24,30 @@ def fetch_post_by_id(post_id: int):
         return None
     return [row["id"], row["title"], row["content"]]
 
+def slett_innlegg():
+    with sqlite3.connect(DB_PATH) as con:
+        con.row_factory = sqlite3.Row
+        innlegg_id = input("Skriv inn id til vare som skal slettes: ")
+        rows = con.execute(
+            ("SELECT * FROM posts WHERE id = ?", (innlegg_id))
+            ) 
+
+def legg_til_innlegg():
+    with sqlite3.connect(DB_PATH) as con:
+        con.row_factory = sqlite3.Row
+
+        title = input("Skriv inn titel: ")
+        content = input("Skriv inn innhold: ")
+
+        row = con.execute(
+            "INSERT INTO posts (title, content) VALUES (?,?)", (title, content)
+        )
+
+def rediger_innlegg():
+    with sqlite3.connect(DB_PATH) as con:
+        con.row_factory = sqlite3.Row
+        innlegg_id = input("Skriv inn id til varen som skal redigeres: ")
+
 @app.route("/")
 def index():
     posts = fetch_all_posts()
@@ -31,7 +55,7 @@ def index():
  
 @app.route("/post/<int:post_id>")
 def post_detail(post_id):
-    post = get_post_by_id(post_id)
+    post = fetch_post_by_id(post_id)
     if not post:
         abort(404)
     return render_template("post.html", post=post)
