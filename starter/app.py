@@ -42,11 +42,14 @@ def legg_til_innlegg():
         row = con.execute(
             "INSERT INTO posts (title, content) VALUES (?,?)", (title, content)
         )
-
+@app.route("/post/rediger(innlegg)")
 def rediger_innlegg():
     with sqlite3.connect(DB_PATH) as con:
         con.row_factory = sqlite3.Row
         innlegg_id = input("Skriv inn id til varen som skal redigeres: ")
+        rows = con.execute(
+            "SELECT * FROM posts WHERE id = ?", (innlegg_id)
+        )
 
 @app.route("/")
 def index():
