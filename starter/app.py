@@ -24,14 +24,18 @@ def fetch_post_by_id(post_id: int):
         return None
     return [row["id"], row["title"], row["content"]]
 
-def slett_innlegg():
+@app.route("/slettinnlegg/<int:post_id>")
+def slett_innlegg(post_id):
     with sqlite3.connect(DB_PATH) as con:
         con.row_factory = sqlite3.Row
-        innlegg_id = input("Skriv inn id til vare som skal slettes: ")
         rows = con.execute(
-            ("SELECT * FROM posts WHERE id = ?", (innlegg_id))
-            ) 
+            "DELETE FROM posts WHERE id = ?", (post_id,)
+        ) 
+        con.commit()
+    posts = fetch_all_posts()
+    return render_template("index.html", posts=posts)
 
+@app.route("/legg/til/innlegg")
 def legg_til_innlegg():
     with sqlite3.connect(DB_PATH) as con:
         con.row_factory = sqlite3.Row
@@ -42,13 +46,15 @@ def legg_til_innlegg():
         row = con.execute(
             "INSERT INTO posts (title, content) VALUES (?,?)", (title, content)
         )
+    
 @app.route("/post/rediger(innlegg)")
 def rediger_innlegg():
     with sqlite3.connect(DB_PATH) as con:
         con.row_factory = sqlite3.Row
         innlegg_id = input("Skriv inn id til varen som skal redigeres: ")
         rows = con.execute(
-            "SELECT * FROM posts WHERE id = ?", (innlegg_id)
+            "SELECT * FROM posts WHERE id = ?", (innlegg_id), 
+            post_id = input ("Skriv inn id-en: ")
         )
 
 @app.route("/")
