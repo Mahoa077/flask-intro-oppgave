@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, render_template, abort
+from flask import Flask, render_template, abort, request
  
 app = Flask(__name__)
 DB_PATH = "blog.db" 
@@ -24,6 +24,12 @@ def fetch_post_by_id(post_id: int):
         return None
     return [row["id"], row["title"], row["content"]]
 
+def get_post_by_id(post_id:int):
+    for p in posts: 
+        if p[0] == post_id:
+            return p 
+    return None
+
 @app.route("/slettinnlegg/<int:post_id>")
 def slett_innlegg(post_id):
     with sqlite3.connect(DB_PATH) as con:
@@ -35,17 +41,21 @@ def slett_innlegg(post_id):
     posts = fetch_all_posts()
     return render_template("index.html", posts=posts)
 
-@app.route("/legg/til/innlegg")
-def legg_til_innlegg():
-    with sqlite3.connect(DB_PATH) as con:
-        con.row_factory = sqlite3.Row
+@app.route("/ny_post",methods=["GET", "POST"])
+def legge_til_nytt_innlegg():
+    if request.method == "POST":
+        tittel = request.form["title"]
+        innhold = request.form["content"]
 
-        title = input("Skriv inn titel: ")
-        content = input("Skriv inn innhold: ")
+        with sqlite3.connect(DB_PATH) as con:
+            con.row_factory = sqlite3.Row
+            row = con.execute(
+                "INSERT INTO posts (title, content) VALUES (?,?)",(tittel, innhold)
+            )
+            con.commit()
 
-        row = con.execute(
-            "INSERT INTO posts (title, content) VALUES (?,?)", (title, content)
-        )
+    posts = fetch_all_posts()
+    return render_template("ny_post.html")
     
 @app.route("/post/rediger(innlegg)")
 def rediger_innlegg():
@@ -58,7 +68,7 @@ def rediger_innlegg():
         )
 
 @app.route("/")
-def index():
+def hello():
     posts = fetch_all_posts()
     return render_template("index.html", posts=posts)
  
@@ -69,6 +79,7 @@ def post_detail(post_id):
         abort(404)
     return render_template("post.html", post=post)
  
+
 
 @app.errorhandler(404)
 def page_not_found(e):
